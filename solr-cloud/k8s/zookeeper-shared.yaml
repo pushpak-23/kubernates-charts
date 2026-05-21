@@ -1,0 +1,38 @@
+apiVersion: zookeeper.pravega.io/v1beta1
+kind: ZookeeperCluster
+
+metadata:
+  name: solr-shared-zk
+  namespace: solr-system
+
+spec:
+  replicas: 5
+
+  image:
+    repository: pravega/zookeeper
+    tag: 0.2.14
+
+  storageType: persistence
+
+  persistence:
+    reclaimPolicy: Retain
+
+    spec:
+      storageClassName: solr-ssd-xfs
+
+      accessModes:
+        - ReadWriteOnce
+
+      resources:
+        requests:
+          storage: 100Gi
+
+  pod:
+    resources:
+      requests:
+        cpu: "2"
+        memory: "6Gi"
+
+      limits:
+        cpu: "4"
+        memory: "12Gi"

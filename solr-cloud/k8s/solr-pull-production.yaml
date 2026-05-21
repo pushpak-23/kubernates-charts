@@ -1,0 +1,102 @@
+apiVersion: solr.apache.org/v1beta1
+kind: SolrCloud
+
+metadata:
+  name: solr-cloud-pull
+  namespace: solr-system
+
+spec:
+  replicas: 8
+
+  solrImage:
+    repository: solr
+    tag: 9.10.1
+
+  solrJavaMem: "-Xms24g -Xmx24g"
+
+  solrOpts: >-
+    -Dsolr.node.roles=data:on,overseer:disallowed
+    -Dnode_type=search
+    -Dsolr.attr.node_type=search
+    -Dsolr.index.ramBufferMB=256
+    -Dsolr.cache.filter.maxRamMB=1536
+    -Dsolr.cache.filter.autowarm=128
+    -Dsolr.cache.queryResult.maxRamMB=1536
+    -Dsolr.cache.queryResult.autowarm=64
+    -Dsolr.cache.document.maxRamMB=768
+    -Dsolr.cache.document.autowarm=0
+    -Dsolr.autoSoftCommit.maxTime=120000
+    -Dsolr.log.level=WARN
+    -DzkClientTimeout=60000
+    -DdistribUpdateConnTimeout=30000
+    -DdistribUpdateSoTimeout=1200000
+    -Dsolr.httpconf.socket.timeout=1200000
+    -Dsolr.replication.socketTimeout=1200000
+    -XX:+UseG1GC
+    -XX:MaxGCPauseMillis=200
+    -XX:+ParallelRefProcEnabled
+    -XX:+AlwaysPreTouch
+    -XX:+DisableExplicitGC
+    -XX:InitiatingHeapOccupancyPercent=30
+    -XX:MaxDirectMemorySize=8g
+
+  customSolrKubeOptions:
+
+    podOptions:
+
+      nodeSelector:
+        hardware-type: search-nodes
+
+      terminationGracePeriodSeconds: 600
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  technology: solr-cloud
+              topologyKey: kubernetes.io/hostname
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              technology: solr-cloud
+
+      resources:
+        requests:
+          cpu: "6"
+          memory: "40Gi"
+
+        limits:
+          cpu: "10"
+          memory: "64Gi"
+
+  dataStorage:
+    persistent:
+      reclaimPolicy: Retain
+
+      pvcTemplate:
+        spec:
+          storageClassName: solr-ssd-xfs
+
+          accessModes:
+            - ReadWriteOnce
+
+          resources:
+            requests:
+              storage: 10Ti
+
+  zookeeperRef:
+    connectionInfo:
+      internalConnectionString: "solr-shared-zk-0.solr-shared-zk-headless.solr-system.svc.cluster.local:2181,solr-shared-zk-1.solr-shared-zk-headless.solr-system.svc.cluster.local:2181,solr-shared-zk-2.solr-shared-zk-headless.solr-system.svc.cluster.local:2181,solr-shared-zk-3.solr-shared-zk-headless.solr-system.svc.cluster.local:2181,solr-shared-zk-4.solr-shared-zk-headless.solr-system.svc.cluster.local:2181"
+  # =========================================================
+  # AVAILABILITY
+  # =========================================================
+  availability:
+
+    podDisruptionBudget:
+      enabled: true
+      method: ClusterWide

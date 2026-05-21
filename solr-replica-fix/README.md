@@ -28,3 +28,8 @@ kubectl apply -f k8s/solr-collection-watcher.yaml
 ```
 
 If your Solr service name or node naming scheme is different, update the environment variables in the Deployment before applying it.
+
+Notes
+
+- The `Dockerfile` at the repository root builds the watcher image.
+- The `k8s/solr-collection-watcher.yaml` Deployment contains example environment variables; edit them for your cluster (Service DNS, node name patterns, image name).

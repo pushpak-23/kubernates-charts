@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: solr-nrt-lb
+  namespace: solr-system
+
+  annotations:
+    loadbalancer.openstack.org/lb-algorithm: "ROUND_ROBIN"
+
+    loadbalancer.openstack.org/connection-limit: "100000"
+
+    loadbalancer.openstack.org/timeout-client-data: "3600000"
+    loadbalancer.openstack.org/timeout-member-data: "3600000"
+
+    loadbalancer.openstack.org/health-monitor-delay: "5"
+    loadbalancer.openstack.org/health-monitor-timeout: "3"
+    loadbalancer.openstack.org/health-monitor-max-retries: "3"
+
+spec:
+  type: LoadBalancer
+
+  externalTrafficPolicy: Cluster
+
+  loadBalancerIP: 192.168.145.50
+
+  selector:
+    solr-cloud: solr-cloud-nrt
+
+  ports:
+    - name: solr
+
+      port: 8983
+      targetPort: 8983
+
+      protocol: TCP

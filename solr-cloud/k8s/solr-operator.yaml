@@ -1,0 +1,43 @@
+affinity: {}
+annotations: {}
+envVars: []
+# <-- Set a short fullname to prevent label length issues -->
+fullnameOverride: 'solr'  
+image:
+  imagePullSecret: ''
+  pullPolicy: IfNotPresent
+  repository: apache/solr-operator
+  tag: v0.9.1
+labels: {}
+leaderElection:
+  enable: true
+mTLS:
+  caCertSecret: ''
+  caCertSecretKey: ca-cert.pem
+  clientCertSecret: ''
+  insecureSkipVerify: true
+  watchForUpdates: true
+metrics:
+  enable: true
+nameOverride: ''
+nodeSelector: {}
+priorityClassName: ''
+rbac:
+  create: true
+replicaCount: 1
+resources: {}
+securityContext:
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+serviceAccount:
+  annotations: {}
+  create: true
+  name: ''
+sidecarContainers: []
+tolerations: []
+watchNamespaces: ''
+zookeeper-operator:
+  crd:
+    create: true
+  install: true
+  use: true
