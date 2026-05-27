@@ -240,11 +240,13 @@ def ensure_rule_for_collection(solr: SolrClient, collection: str, rule: ReplicaR
 
         misplaced_replicas: List[Dict[str, object]] = []
         matched_nodes: Set[str] = set()
+        matching_replica_count = 0
         for replica_name, replica in replicas.items():
             if not isinstance(replica, dict):
                 continue
             if replica_type(replica) != rule.replica_type:
                 continue
+            matching_replica_count += 1
             node_name = replica_node_name(replica)
             if node_name in target_nodes:
                 matched_nodes.add(node_name)
@@ -308,19 +310,21 @@ def ensure_rule_for_collection(solr: SolrClient, collection: str, rule: ReplicaR
                     continue
 
                 matched_nodes = set()
+                matching_replica_count = 0
                 for replica in replicas.values():
                     if not isinstance(replica, dict):
                         continue
                     if replica_type(replica) != rule.replica_type:
                         continue
+                    matching_replica_count += 1
                     node_name = replica_node_name(replica)
                     if node_name in target_nodes:
                         matched_nodes.add(node_name)
 
-        missing = rule.replicas_per_shard - len(matched_nodes)
+        missing = rule.replicas_per_shard - matching_replica_count
         if missing <= 0:
             logger.info(
-                "Collection %s shard %s already has %d %s replica(s) on matching nodes",
+                "Collection %s shard %s already has %d %s replica(s)",
                 collection,
                 shard_name,
                 rule.replicas_per_shard,
